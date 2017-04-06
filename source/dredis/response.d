@@ -1,9 +1,5 @@
 module dredis.response;
 
-/**
- * Authors: Adil Baig, adil.baig@aidezigns.com
- */
-
 import std.conv : to;
 
 public :

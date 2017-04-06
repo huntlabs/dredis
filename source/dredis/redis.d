@@ -1,13 +1,19 @@
 module dredis.redis;
 
-/**
- * Authors: Adil Baig, adil.baig@aidezigns.com
- */
-
 import dredis.connection;
 import dredis.encoder;
 import dredis.response;
 import dredis.parser : RedisResponseException;
+import std.stdio;
+import std.conv;
+import std.traits;
+import std.json;
+import std.exception;
+import std.variant;
+import std.array;
+import std.string;
+import std.typetuple;
+import std.exception;
 
 debug(dredis)
 {
@@ -32,6 +38,16 @@ public :
         {
             conn = new TcpSocket(new InternetAddress(host, port));
         }
+		
+		auto opDispatch(string name,T...)(T args)
+		{
+			//try{
+				auto result =  send(name,args);
+			//} catch (exception e){
+				//return e.msg;
+			//}
+			return result;
+		}
 
         /**
          * Call Redis using any type T that can be converted to a string
@@ -60,7 +76,6 @@ public :
         	// This automatically gives us PubSub
 
         	debug(dredis) { writeln(escape(toMultiBulk(key, args)));}
-
         	conn.send(toMultiBulk(key, args));
         	Response[] r = receiveResponses(conn, 1);
             return cast(R)(r[0]);
@@ -177,7 +192,11 @@ public :
 unittest
 {
     auto redis = new Redis();
-    auto response = redis.send("LASTSAVE");
+	assert(redis.set("xxkey","123","EX",10).to!string == "OK");
+	assert(redis.get("xxkey").to!string == "123");
+	assert(redis.ttl("xxkey").to!int == 10);
+    
+	auto response = redis.send("LASTSAVE");
     assert(response.type == ResponseType.Integer);
 
     assert(redis.send!(bool)("SET", "name", "adil baig"));

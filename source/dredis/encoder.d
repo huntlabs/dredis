@@ -1,9 +1,5 @@
 module dredis.encoder;
 
-/**
- * Authors: Adil Baig, adil.baig@aidezigns.com
- */
-
 import std.array : appender;
 import std.traits : isSomeChar, isSomeString, isArray;
 import std.conv : to, text;

@@ -1,9 +1,5 @@
 module dredis.subscriber;
 
-/**
- * Authors: Ali Çehreli, acehreli@yahoo.com
- */
-
 private:
 
 import dredis.response : Response;
