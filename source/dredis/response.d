@@ -319,6 +319,23 @@ public :
                     return "";
             }
         }
+        /**
+         * Returns the value of this Response as a string array
+         */
+        @property @trusted string[] toStringArray()
+        {
+            switch(type)
+            {
+                case ResponseType.MultiBulk :
+                    string[] t;
+                    foreach(v; values)
+                        t ~= v.toDiagnosticString();
+					return t;
+                default:
+                    return null;
+            }
+        }
+
 
         /**
          * Returns the value of this Response as a string, along with type information

@@ -211,6 +211,48 @@ public :
 			auto result = send!(bool)("EXISTS",key);
 			return result;
 		}
+		/*
+		 * Set a timeout on key.
+		 * @return
+		 * 1 if the timeout was set.
+		 * 0 if key does not exist or the timeout could not be set.
+		 */
+		int expire(string key,int timeout)
+		{
+			auto result = send!(int)("EXPIRE",key,timeout);
+			return result;
+		}
+		/*
+		 * Set a unixtime timeout on key.
+		 * @return
+		 * 1 if the timeout was set.
+		 * 0 if key does not exist or the timeout could not be set.
+		 */
+		int expireat(string key,int timeout)
+		{
+			auto result = send!(int)("EXPIREAT",key,timeout);
+			return result;
+		}
+		/*
+		 * @return Returns all keys matching pattern.
+		 */
+		string[] keys(string pattern)
+		{
+			auto result = send("KEYS",pattern);
+			//return result;
+        	debug(dredis) { writeln(typeid(result),result,"type : ",result.type," value : ",result.value,);}
+			return result.toStringArray;
+		}
+		/*
+		 * Atomically transfer a key from a source Redis instance to a destination Redis instance. 
+		 * @return The command returns OK on success, or NOKEY if no keys were found in the source instance.
+		 */
+		bool migrate(string...)(string host,string port,string args)
+		{
+			auto result = send!(bool)("MIGRATE",host,port,args);
+			return result;
+		}
+
     }
 
 
@@ -218,11 +260,22 @@ public :
 unittest
 {
     auto redis = new Redis();
+    debug(dredis) { writeln("redis commands test.....\n\n\n");}
 	assert(redis.set("xxkey","10").to!string == "OK");
 	assert(redis.get("xxkey").to!string == "10");
 	assert(redis.exists("xxkey") == true);
 	//assert(redis.dump("xxkey") == "\u0000\xC0\n\b\u0000ײ\xBB\xFA\xA7\xB7\xE9\x83");
 	assert(redis.del("xxkey") == 1);
+	assert(redis.set("xxkey","10").to!string == "OK");
+	assert(redis.expire("xxkey",20) == 1);
+	assert(redis.expire("yykey",20) == 0);
+	assert(redis.expireat("xxkey",1798736461) == 1);
+	assert(redis.expireat("yykey",1798736461) == 0);
+	redis.set("ssoxx","1");
+	redis.set("bboxx","2");
+	redis.set("ssmxx","3");
+	assert(redis.keys("*o*") == ["ssoxx","bboxx"]);
+    debug(dredis) { writeln("redis commands test end\n\n\n");}
     
 	auto response = redis.send("LASTSAVE");
     assert(response.type == ResponseType.Integer);
