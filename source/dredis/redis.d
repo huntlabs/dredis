@@ -185,6 +185,32 @@ public :
             return (r[0]);
         }
 
+		/*
+		 * Removes the specified keys.
+		 * @return The number of keys that were removed.
+		 */
+		int del(string...)(string args)
+		{
+			auto result = send!(int)("DEL",args);	
+			return result;
+		}
+		/*
+		 * Serialize the value stored at key in a Redis-specific format and return it to the user. 
+		 * @return the serialized value.
+		 */
+		string dump(string key)
+		{
+			auto result = send!(string)("DUMP",key);
+			return result;
+		}
+		/*
+		 * @return Returns if key exists.
+		 */
+		bool exists(string key)
+		{
+			auto result = send!(bool)("EXISTS",key);
+			return result;
+		}
     }
 
 
@@ -192,9 +218,11 @@ public :
 unittest
 {
     auto redis = new Redis();
-	assert(redis.set("xxkey","123","EX",10).to!string == "OK");
-	assert(redis.get("xxkey").to!string == "123");
-	assert(redis.ttl("xxkey").to!int == 10);
+	assert(redis.set("xxkey","10").to!string == "OK");
+	assert(redis.get("xxkey").to!string == "10");
+	assert(redis.exists("xxkey") == true);
+	//assert(redis.dump("xxkey") == "\u0000\xC0\n\b\u0000ײ\xBB\xFA\xA7\xB7\xE9\x83");
+	assert(redis.del("xxkey") == 1);
     
 	auto response = redis.send("LASTSAVE");
     assert(response.type == ResponseType.Integer);
