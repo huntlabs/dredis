@@ -39,6 +39,11 @@ public :
             conn = new TcpSocket(new InternetAddress(host, port));
         }
 		
+		override string toString()
+		{
+			return "redis";
+		}
+
 		auto opDispatch(string name,T...)(T args)
 		{
 			//try{
@@ -198,10 +203,10 @@ public :
 		 * Serialize the value stored at key in a Redis-specific format and return it to the user. 
 		 * @return the serialized value.
 		 */
-		string dump(string key)
+		void dump(string key)
 		{
-			auto result = send!(string)("DUMP",key);
-			return result;
+			auto result = send("DUMP",key);
+			//return null;
 		}
 		/*
 		 * @return Returns if key exists.
@@ -252,6 +257,38 @@ public :
 			auto result = send!(bool)("MIGRATE",host,port,args);
 			return result;
 		}
+		/*
+		 * @return TTL in seconds, or a negative value in order to signal an error (see the description above).
+		 */
+		int ttl(string key)
+		{
+			auto result = send!(int)("TTL",key);
+			return result;
+		}
+		/*
+		 * Set key to hold the string value. If key already holds a value, it is overwritten
+		 * @return 
+		 */
+		bool set(string key,string value)
+		{
+			auto result = send!(bool)("SET",key,value);
+			return result;
+		}
+		bool set(string key,string value,int timeout)
+		{
+			auto result = send!(bool)("SET",key,value,"EX",timeout);
+			return result;
+		}
+		bool set(string key,string value,string flag)
+		{
+			auto result = send!(bool)("SET",key,value,flag);
+			return result;
+		}
+		bool set(string key,string value,string flag,int timeout)
+		{
+			auto result = send!(bool)("SET",key,value,flag,"EX",timeout);
+			return result;
+		}
 
     }
 
@@ -261,12 +298,12 @@ unittest
 {
     auto redis = new Redis();
     debug(dredis) { writeln("redis commands test.....\n\n\n");}
-	assert(redis.set("xxkey","10").to!string == "OK");
+	assert(redis.set("xxkey","10") == true);
 	assert(redis.get("xxkey").to!string == "10");
 	assert(redis.exists("xxkey") == true);
 	//assert(redis.dump("xxkey") == "\u0000\xC0\n\b\u0000ײ\xBB\xFA\xA7\xB7\xE9\x83");
 	assert(redis.del("xxkey") == 1);
-	assert(redis.set("xxkey","10").to!string == "OK");
+	assert(redis.set("xxkey","10") == true);
 	assert(redis.expire("xxkey",20) == 1);
 	assert(redis.expire("yykey",20) == 0);
 	assert(redis.expireat("xxkey",1798736461) == 1);
@@ -275,6 +312,8 @@ unittest
 	redis.set("bboxx","2");
 	redis.set("ssmxx","3");
 	assert(redis.keys("*o*") == ["ssoxx","bboxx"]);
+	redis.set("abc","test",10);
+	assert(redis.ttl("abc") == 10);
     debug(dredis) { writeln("redis commands test end\n\n\n");}
     
 	auto response = redis.send("LASTSAVE");
