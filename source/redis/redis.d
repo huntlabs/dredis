@@ -23,6 +23,10 @@ public class Redis
 
 	mixin keyCommands;
 	mixin stringCommands;
+	mixin hashCommands;
+	mixin listCommands;
+	mixin setCommands;
+	mixin sortedsetCommands;
 
 	/**
 	 * Create a new connection to the Redis server
@@ -190,9 +194,10 @@ public class Redis
 unittest
 {
 	auto redis = new Redis();
-	debug(redis) { writeln("redis commands test.....\n\n\n");}
+	redis.FLUSHALL();
+	debug(redis) { writeln("\n\n\nredis commands test.....");}
 	assert(redis.set("xxkey","10") == true);
-	assert(redis.get("xxkey").to!string == "10");
+	assert(redis.get("xxkey") == "10");
 	assert(redis.exists("xxkey") == true);
 	//assert(redis.dump("xxkey") == "\u0000\xC0\n\b\u0000ײ\xBB\xFA\xA7\xB7\xE9\x83");
 	assert(redis.del("xxkey") == 1);
@@ -204,9 +209,33 @@ unittest
 	redis.set("ssoxx","1");
 	redis.set("bboxx","2");
 	redis.set("ssmxx","3");
-	assert(redis.keys("*o*") == ["ssoxx","bboxx"]);
+	assert(redis.keys("*m*") == ["ssmxx"]);
 	redis.set("abc","test",10);
 	assert(redis.ttl("abc") == 10);
+	redis.set("incrkey","10");
+	assert(redis.incr("incrkey") == 11);
+
+	assert(redis.hset("website","google","google.com") == 1);
+	assert(redis.hset("website","baidu","baidu.com") == 1);
+	assert(redis.hset("website","putao","putao.com") == 1);
+	assert(redis.hset("website","google","google.com") == 0);
+	assert(redis.hlen("website") == 3);
+	assert(redis.hget("website","google") == "google.com");
+	assert(redis.hdel("website","google") == 1);
+	assert(redis.hlen("website") == 2);
+	assert(redis.hdel("website","baidu","putao") == 2);
+	assert(redis.hlen("website") == 0);
+
+
+	assert(redis.lpush("language","c") == 1);
+	assert(redis.lpush("language","php") == 2);
+	assert(redis.llen("language") == 2);
+	assert(redis.lset("language",0,"d") == true);
+	assert(redis.lpop("language") == "d");
+	assert(redis.llen("language") == 1);
+	assert(redis.lrange("language",0,1) == ["c"]);
+
+
 	debug(redis) { writeln("redis commands test end\n\n\n");}
 
 	auto response = redis.send("LASTSAVE");

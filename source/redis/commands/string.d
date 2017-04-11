@@ -27,4 +27,35 @@ mixin template stringCommands()
 		return result;
 	}
 
+	/*
+	 * Increments the number stored at key by one.
+	 * @return
+	 */
+	int incr(string key)
+	{
+		auto result = send!(int)("INCR",key);
+		return result;
+	}
+	
+	/*
+	 * Get the value of key. 
+	 * @return
+	 */
+	string get(string key)
+	{
+		auto result = send!(string)("GET",key);
+		return result;
+	}
+
+	/*
+	 * If key already exists and is a string, this command appends the value at the end of the string. 
+	 * If key does not exist it is created and set as an empty string.
+	 * @return
+	 */
+	string append(string key,string value)
+	{
+		auto result = send!(string)("APPEND",key,value);
+		return result;
+	}
+
 }
