@@ -27,6 +27,7 @@ public class Redis
 	mixin listCommands;
 	mixin setCommands;
 	mixin sortedsetCommands;
+	mixin serverCommands;
 
 	/**
 	 * Create a new connection to the Redis server
@@ -194,8 +195,9 @@ public class Redis
 unittest
 {
 	auto redis = new Redis();
-	redis.FLUSHALL();
 	debug(redis) { writeln("\n\n\nredis commands test.....");}
+	//assert(redis.ping() == "PONG");
+	redis.flushall();
 	assert(redis.set("xxkey","10") == true);
 	assert(redis.get("xxkey") == "10");
 	assert(redis.exists("xxkey") == true);
@@ -226,7 +228,6 @@ unittest
 	assert(redis.hdel("website","baidu","putao") == 2);
 	assert(redis.hlen("website") == 0);
 
-
 	assert(redis.lpush("language","c") == 1);
 	assert(redis.lpush("language","php") == 2);
 	assert(redis.llen("language") == 2);
@@ -235,8 +236,13 @@ unittest
 	assert(redis.llen("language") == 1);
 	assert(redis.lrange("language",0,1) == ["c"]);
 
+	assert(redis.sadd("bbs","baidu.com","google.com") == 2);
+	assert(redis.sadd("bbs","douban.com") == 1);
+	assert(redis.scard("bbs") == 3);
+	assert(redis.sadd("net","douban.com") == 1);
+	assert(redis.spop("net") == "douban.com");
 
-	debug(redis) { writeln("redis commands test end\n\n\n");}
+	debug(redis){writeln("redis commands test end\n\n\n");}
 
 	auto response = redis.send("LASTSAVE");
 	assert(response.type == ResponseType.Integer);
