@@ -41,12 +41,10 @@ public :
 
 		case '-' :
 			debug(redis){import std.stdio;writeln(__FUNCTION__,"\t",__LINE__,"\t",
-					cast(string)bytes[0..5],"\t",cast(string)bytes[0..5]=="MOVED");}
-			if(cast(string)bytes[0..5] == "MOVED"){
+					cast(string)bytes);}
+			if(cast(string)bytes[0..5] == "MOVED" || cast(string)bytes[0..3] == "ASK"){
 				response.type = ResponseType.Moved;
 				response.value = cast(string)bytes;
-				debug(redis){import std.stdio;writeln(__FUNCTION__,"\t",__LINE__,"\t",
-						response.type,"\t",response.value);}
 			}else{
 				throw new RedisResponseException(cast(string)bytes);
 
