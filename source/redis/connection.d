@@ -57,10 +57,15 @@ Response[] receiveResponses(TcpSocket conn, size_t minResponses = 0)
 		while(buffer.length > 0)
 		{
 			auto r = parseResponse(buffer);
+			debug(redis) { writeln(__FUNCTION__,"\t",r.type,"\t",typeid(r));}	
 			if(r.type == ResponseType.Invalid)
 				break;
 
 			*stackPtr ~= r;
+			if(r.isMoved)
+			{
+				break;
+			}
 			if(r.type == ResponseType.MultiBulk)
 			{
 				auto mb = &((*stackPtr)[$-1]);
@@ -104,6 +109,7 @@ Response[] receiveResponses(TcpSocket conn, size_t minResponses = 0)
 
 	}
 
+	debug(redis) { writeln(__FUNCTION__,"\tlen:",responses.length,"\t",responses);}
 	return responses;
 }
 

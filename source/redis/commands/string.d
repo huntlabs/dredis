@@ -8,6 +8,7 @@ mixin template stringCommands()
 	 */
 	bool set(string key,string value)
 	{
+		import std.stdio;writeln(__FUNCTION__,"\t",key,"\t",value);
 		auto result = send!(bool)("SET",key,value);
 		return result;
 	}

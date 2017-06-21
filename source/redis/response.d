@@ -14,7 +14,8 @@ public :
         Integer,
         Bulk,
         MultiBulk,
-        Nil
+        Nil,
+		Moved
     }
 
     /**
@@ -73,6 +74,10 @@ public :
             return (type != ResponseType.Invalid);
         }
 
+		bool isMoved()
+		{
+			return (type == ResponseType.Moved);
+		}
         /*
          * Response is a BidirectionalRange
          */
@@ -310,6 +315,7 @@ public :
                 case ResponseType.Error :
                 case ResponseType.Status :
                 case ResponseType.Bulk :
+                case ResponseType.Moved :
                     return value;
 
                 case ResponseType.MultiBulk :
@@ -371,6 +377,9 @@ public :
 
                 case ResponseType.Invalid :
                     return "(Invalid)";
+
+				case ResponseType.Moved :
+					return "(Moved) " ~ value;
             }
         }
     }

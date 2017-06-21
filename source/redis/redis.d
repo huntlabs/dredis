@@ -17,8 +17,8 @@ public class Redis
 	import std.socket : TcpSocket, InternetAddress;
 
 	private:
-	TcpSocket conn;
-
+	TcpSocket[string] conns;
+	string addr;
 	public:
 
 	mixin keyCommands;
@@ -34,7 +34,9 @@ public class Redis
 	 */
 	this(string host = "127.0.0.1", ushort port = 6379)
 	{
-		conn = new TcpSocket(new InternetAddress(host, port));
+		auto conn = new TcpSocket(new InternetAddress(host, port));
+		addr = host~":"~to!string(port);
+		conns[addr] = conn; 
 	}
 
 	override string toString()
@@ -78,18 +80,29 @@ public class Redis
 		// For async calls, just flush the queue
 		// This automatically gives us PubSub
 
-		debug(redis) { writeln(escape(toMultiBulk(key, args)));}
+		SENDS:
+		debug(redis) { writeln(__FUNCTION__,"\t",__LINE__,escape(toMultiBulk(key, args)));}
 		conn.send(toMultiBulk(key, args));
 		Response[] r = receiveResponses(conn, 1);
+		if(r.length && r[0].isMoved)
+		{
+			addr = ((split(r[0].toString," "))[2]);
+			goto SENDS;
+		}
 		return cast(R)(r[0]);
 	}
 
 	R send(R = Response)(string cmd)
 	{
+		SEND:
 		debug(redis) { writeln(escape(toMultiBulk(cmd)));}
-
 		conn.send(toMultiBulk(cmd));
 		Response[] r = receiveResponses(conn, 1);
+		if(r.length && r[0].isMoved)
+		{
+			addr = ((split(r[0].toString," "))[2]);
+			goto SEND;
+		}
 		return cast(R)(r[0]);
 	}
 
@@ -98,10 +111,17 @@ public class Redis
 	 */
 	R sendRaw(R = Response)(string cmd)
 	{
+		SENDRAW:
+		auto conn = conns[addr];
 		debug(redis) { writeln(escape(cmd));}
 
 		conn.send(cmd);
 		Response[] r = receiveResponses(conn, 1);
+		if(r.length && r[0].isMoved)
+		{
+			addr = ((split(r[0].toString," "))[2]);
+			goto SENDRAW;
+		}
 		return cast(R)(r[0]);
 	}
 
@@ -188,6 +208,15 @@ public class Redis
 		return (r[0]);
 	}
 
+	TcpSocket conn()
+	{
+		if(addr !in conns){
+			auto arr = split(addr,":");
+			conns[addr] = new TcpSocket(new InternetAddress(arr[0], arr[1].to!ushort));
+		}
+		return conns[addr];
+	}
+
 }
 
 
@@ -195,7 +224,7 @@ public class Redis
 unittest
 {
 	auto redis = new Redis();
-	debug(redis) { writeln("\n\n\nredis commands test.....");}
+	//debug(redis) { writeln("\n\n\nredis commands test.....");}
 	//assert(redis.ping() == "PONG");
 	redis.flushall();
 	assert(redis.set("xxkey","10") == true);

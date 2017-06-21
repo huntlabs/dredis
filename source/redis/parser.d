@@ -13,7 +13,6 @@ public :
 @trusted Response parseResponse(ref byte[] mb)
 {
 	import std.conv : to;
-
 	Response response;
 	response.type = ResponseType.Invalid;
 
@@ -41,8 +40,18 @@ public :
 			break;
 
 		case '-' :
-			throw new RedisResponseException(cast(string)bytes);
-			//                break;
+			debug(redis){import std.stdio;writeln(__FUNCTION__,"\t",__LINE__,"\t",
+					cast(string)bytes[0..5],"\t",cast(string)bytes[0..5]=="MOVED");}
+			if(cast(string)bytes[0..5] == "MOVED"){
+				response.type = ResponseType.Moved;
+				response.value = cast(string)bytes;
+				debug(redis){import std.stdio;writeln(__FUNCTION__,"\t",__LINE__,"\t",
+						response.type,"\t",response.value);}
+			}else{
+				throw new RedisResponseException(cast(string)bytes);
+
+			}
+			break;
 
 		case ':' :
 			response.type = ResponseType.Integer;
