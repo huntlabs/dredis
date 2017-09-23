@@ -1,0 +1,12 @@
+{
+	"name": "examples",
+	"authors": [
+		"root"
+	],
+    "dependencies": {
+        "dredis": {"path":"../"}
+    },
+	"description": "A minimal D application.",
+	"copyright": "Copyright © 2017, root",
+	"license": "proprietary"
+}
