@@ -37,8 +37,10 @@ public class Redis
 		auto conn = new TcpSocket(new InternetAddress(host, port));
 		addr = host~":"~to!string(port);
 		conns[addr] = conn; 
+		writeln(password);
+        writeln("AUTH "~password);
         if(password.length > 0)
-            conn.send("AUTH "~password);
+			conn.send(toMultiBulk("AUTH", password));
 	}
 
 	override string toString()
