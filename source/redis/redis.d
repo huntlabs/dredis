@@ -32,11 +32,13 @@ public class Redis
 	/**
 	 * Create a new connection to the Redis server
 	 */
-	this(string host = "127.0.0.1", ushort port = 6379)
+	this(string host = "127.0.0.1", ushort port = 6379,string password = "")
 	{
 		auto conn = new TcpSocket(new InternetAddress(host, port));
 		addr = host~":"~to!string(port);
 		conns[addr] = conn; 
+        if(password.length > 0)
+            conn.send("AUTH "~password);
 	}
 
 	override string toString()
