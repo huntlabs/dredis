@@ -39,8 +39,10 @@ public class Redis
 		conns[addr] = conn; 
 		writeln(password);
         writeln("AUTH "~password);
-        if(password.length > 0)
+        if(password.length > 0){
 			conn.send(toMultiBulk("AUTH", password));
+		    Response[] r = receiveResponses(conn, 1);
+        }
 	}
 
 	override string toString()
