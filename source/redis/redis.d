@@ -12,6 +12,7 @@ import std.typetuple;
 import std.exception;
 
 public import redis;
+import std.socket;
 public class Redis
 {
 	import std.socket : TcpSocket, InternetAddress;
@@ -19,6 +20,7 @@ public class Redis
 	private:
 	TcpSocket[string] conns;
 	string addr;
+	string password;
 	public:
 
 	mixin keyCommands;
@@ -39,6 +41,7 @@ public class Redis
 		conns[addr] = conn; 
 		writeln(password);
         writeln("AUTH "~password);
+		this.password = password;
         if(password.length > 0){
 			conn.send(toMultiBulk("AUTH", password));
 		    Response[] r = receiveResponses(conn, 1);
@@ -117,8 +120,8 @@ public class Redis
 	 */
 	R sendRaw(R = Response)(string cmd)
 	{
-		SENDRAW:
-		auto conn = conns[addr];
+		SEND:
+
 		debug(redis) { writeln(escape(cmd));}
 
 		conn.send(cmd);
@@ -126,7 +129,7 @@ public class Redis
 		if(r.length && r[0].isMoved)
 		{
 			addr = ((split(r[0].toString," "))[2]);
-			goto SENDRAW;
+			goto SEND;
 		}
 		return cast(R)(r[0]);
 	}
@@ -219,6 +222,25 @@ public class Redis
 		if(addr !in conns){
 			auto arr = split(addr,":");
 			conns[addr] = new TcpSocket(new InternetAddress(arr[0], arr[1].to!ushort));
+			if(password.length > 0){
+				conns[addr].send(toMultiBulk("AUTH", password));
+				Response[] r = receiveResponses(conns[addr], 1);
+			}
+		}
+
+		int error;
+		conns[addr].getOption(SocketOptionLevel.SOCKET, SocketOption.ERROR, error);
+		if (error != 0)
+		{
+			conns[addr].close();
+			auto arr = split(addr,":");
+			conns[addr] = new TcpSocket(new InternetAddress(arr[0], arr[1].to!ushort));
+			if(password.length > 0){
+				conns[addr].send(toMultiBulk("AUTH", password));
+				Response[] r = receiveResponses(conns[addr], 1);
+			}
+			throw new ConnectionException("Error while sending request, error " ~ to!string(error));
+			
 		}
 		return conns[addr];
 	}
