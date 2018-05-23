@@ -11,6 +11,10 @@ debug(redis) {
 	import std.stdio : writeln;
 	import redis.encoder : escape;
 }
+version(Win32)
+{
+	import std.socket;
+}
 
 public:
 
