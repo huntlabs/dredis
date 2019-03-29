@@ -1,2 +1,4 @@
 libdredis.a
 dub.selections.json
+dredis.lib
+.dub/*

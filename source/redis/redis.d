@@ -11,6 +11,8 @@ import std.string;
 import std.typetuple;
 import std.exception;
 
+import core.stdc.stdint;
+
 public import redis;
 import std.socket;
 public class Redis
@@ -228,7 +230,7 @@ public class Redis
 			}
 		}
 
-		int error;
+		int32_t error;
 		conns[addr].getOption(SocketOptionLevel.SOCKET, SocketOption.ERROR, error);
 		if (error != 0)
 		{
