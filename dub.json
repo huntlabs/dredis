@@ -1,6 +1,8 @@
 {
     "name": "dredis",
     "description": "Redis driver for D.",
-    "authors": ["putao dlang team"],
-    "license": "MIT"
+    "copyright": "Copyright (C) 2015-2019, HuntLabs",
+    "homepage": "https://www.huntlabs.net",
+    "license": "MIT",
+    "versions": ["WITH_HUNT_REDIS"]
 }
